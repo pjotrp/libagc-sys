@@ -1,0 +1,146 @@
+
+(define-module (agc agc)
+  #:use-module (guix gexp)
+  #:use-module (guix utils)
+  #:use-module (guix packages)
+  #:use-module (guix git-download)
+  #:use-module (guix build-system cargo)
+  #:use-module (guix build-system gnu)
+  #:use-module ((guix licenses) #:prefix license:)
+
+  #:use-module (gnu packages base)
+  #:use-module (gnu packages c)
+  #:use-module (gnu packages cmake)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages compression)
+
+  #:use-module (libagc-sys bioinformatics)
+  )
+
+(define-public bio-agclib
+  (let ((commit "f0fef1c"))
+  (package
+    (name "bio-agclib")
+    (version (string-append "3.2.1-" (string-take commit 7)))
+    (source (origin
+             (method git-fetch)
+             (uri (git-reference
+                   (url "https://github.com/refresh-bio/agc")
+                   (commit commit)
+                   (recursive? #t)))
+             (file-name (string-append name "-" version "-checkout"))
+             (sha256
+              (base32
+               "1svmmck2l8fw8rqhrj61nglmw13a3dmmyx69xqajc7mglaqdw5aa"
+               ))))
+    (inputs (list
+      libdeflate
+      mimalloc
+      ;; coreutils
+      ;; sed
+      ;; minizip-ng
+      lzlib
+      ;; zstd
+      zlib
+      ))
+    (build-system gnu-build-system)
+    (arguments
+     (list
+      #:tests? #f ;; no tests
+      #:make-flags
+        #~(list (string-append "PREFIX=" #$output)
+                (string-append "CC=" #$(cc-for-target))
+                (string-append "CXX=" #$(cxx-for-target))
+                (string-append "AR=" #$(ar-for-target))
+                (string-append "PLATFORM=avx2")
+                ;; Override "/sbin/ldconfig" with simply "echo" since
+                ;; we don't need ldconfig(8).
+                "LDCONF=echo")
+      #:phases
+        #~(modify-phases %standard-phases
+            (add-before 'build 'remove-building-vendored-dependencies
+                        (lambda _
+                          (substitute* "makefile"
+                                       (("^[$].call ADD_MIMALLOC") "# ")
+                                       (("^[$].call ADD_LIBDEFLATE") "# ")
+                                       (("^[$].call ADD_LIBZSTD") "# ")
+                                       (("^[$].call PROPOSE_ISAL") "# ")
+                                       (("^[$].call PROPOSE_ZLIB_NG") "# ")
+                                       (("^[$].call CHOOSE_GZIP_DECOMPRESSION") "# ")
+                                       (("^[$].call ADD_PYBIND11") "# ")
+                                       )))
+            (delete 'configure)
+            (replace 'build
+               ;; By default, only the static library is built.
+               (lambda* (#:key make-flags parallel-build?
+                         #:allow-other-keys)
+                        (let* ((job-count (if parallel-build?
+                                              (number->string (parallel-job-count))
+                                              1))
+                               (jobs (string-append "-j" job-count))
+                               (target #$(if (target-mingw?)
+                                             "static"
+                                             "shared")))
+                          (apply invoke "make" "VERBOSE=1" "libagc" jobs make-flags)
+                          )))
+            (replace 'install
+               ;; Upstream provides no install phase.
+               (lambda _
+                 (let* ((lib (string-append #$output "/lib"))
+                        (inc (string-append #$output "/include/agc"))
+                        )
+                (install-file "src/lib-cxx/agc-api.h" inc)
+                (install-file "bin/libagc.a" lib))))
+            )))
+
+    (properties '((tunable? . #t)))
+
+    (home-page "https://github.com/refresh-bio/agc")
+    (synopsis "High levels of population-based compression for sequence data")
+    (description "
+Assembled Genomes Compressor (AGC) is a tool designed to compress collections of de-novo assembled genomes. It can be used for various types of datasets: short genomes (viruses) as well as long (humans).")
+
+    (license license:expat))))
+
+
+(define %source-dir (dirname (dirname (dirname (current-source-directory)))))
+
+(define vcs-file?
+  (or (git-predicate %source-dir)
+      (const #t)))
+
+(define-public libagc-sys
+  (package
+    (name "libagc-sys")
+    (version "0.1.0")
+    (source
+     (local-file "../../.." ; find root from .guix/modules/agc in repo
+                 "agc-checkout"
+                 #:recursive? #t
+                 #:select? vcs-file?))
+    (build-system cargo-build-system)
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+          (add-before 'build 'remove-agc-as-core-dependency
+            (lambda _
+              (substitute* "Cargo.toml"
+                (("^.*agc-rs.*$") "")
+                (("^default =.*") "")))))))
+    (inputs (cons*
+             ;; spoa
+             bio-agclib
+             pkg-config
+             cmake-minimal
+             ;; gcc-toolchain make libdeflate pkg-config xz coreutils sed zstd zlib nss-certs openssl curl zlib libdeflate pkg-config xz mimalloc coreutils sed minizip-ng lzlib zlib:static zstd:static zstd:lib zstd zlib
+             (list zstd "lib")
+             (cargo-inputs 'libagc-sys #:module '(libagc-sys rust-crates))))
+    (synopsis "High levels of population-based compression for sequence data")
+    (description "
+Assembled Genomes Compressor (AGC) is a tool designed to compress collections of de-novo assembled genomes. It can be used for various types of datasets: short genomes (viruses) as well as long (humans).")
+
+    (license license:expat)
+    (home-page "https://github.com/pangenome/libagc-sys ")))
+
+libagc-sys
