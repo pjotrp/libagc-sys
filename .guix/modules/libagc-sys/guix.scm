@@ -1,5 +1,5 @@
 
-(define-module (agc agc)
+(define-module (guix)
   #:use-module (guix gexp)
   #:use-module (guix utils)
   #:use-module (guix packages)
@@ -11,11 +11,19 @@
   #:use-module (gnu packages base)
   #:use-module (gnu packages c)
   #:use-module (gnu packages cmake)
-  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages commencement)
   #:use-module (gnu packages compression)
+  #:use-module (gnu packages curl)
+  #:use-module (gnu packages llvm)
+  #:use-module (gnu packages nss)
+  #:use-module (gnu packages perl)
+  #:use-module (gnu packages pkg-config)
+  #:use-module (gnu packages rust)
+  #:use-module (gnu packages tls)
 
   #:use-module (libagc-sys bioinformatics)
   )
+
 
 (define-public bio-agclib
   (let ((commit "f0fef1c"))
@@ -119,23 +127,17 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
                  #:recursive? #t
                  #:select? vcs-file?))
     (build-system cargo-build-system)
-    (arguments
-     (list
-      #:phases
-      #~(modify-phases %standard-phases
-          (add-before 'build 'remove-agc-as-core-dependency
-            (lambda _
-              (substitute* "Cargo.toml"
-                (("^.*agc-rs.*$") "")
-                (("^default =.*") "")))))))
     (inputs (cons*
              ;; spoa
              bio-agclib
-             pkg-config
-             cmake-minimal
-             ;; gcc-toolchain make libdeflate pkg-config xz coreutils sed zstd zlib nss-certs openssl curl zlib libdeflate pkg-config xz mimalloc coreutils sed minizip-ng lzlib zlib:static zstd:static zstd:lib zstd zlib
-             (list zstd "lib")
-             (cargo-inputs 'libagc-sys #:module '(libagc-sys rust-crates))))
+             ;; pkg-config
+             ;; cmake
+             ;; gcc-toolchain
+             ;; binutils
+             ;; coreutils
+             ;; (list zstd "lib")
+             (cargo-inputs 'libagc-sys #:module '(libagc-sys rust-crates))
+             ))
     (synopsis "High levels of population-based compression for sequence data")
     (description "
 Assembled Genomes Compressor (AGC) is a tool designed to compress collections of de-novo assembled genomes. It can be used for various types of datasets: short genomes (viruses) as well as long (humans).")
@@ -143,4 +145,22 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
     (license license:expat)
     (home-page "https://github.com/pangenome/libagc-sys ")))
 
-libagc-sys
+(define-public crusco-shell
+  "Shell version to use 'cargo build' against guix rust"
+  (package
+    (inherit libagc-sys)
+    (name "crusco-shell")
+    (inputs
+     (modify-inputs (package-inputs libagc-sys)
+         (append binutils coreutils-minimal ;; for the shell
+                 )))
+    (propagated-inputs (list cmake rust nss-certs openssl perl gnu-make-4.2
+                             coreutils which perl binutils gcc-toolchain pkg-config zlib
+                             sed curl clang
+             ;; gcc-toolchain make libdeflate pkg-config xz coreutils sed zstd zlib nss-certs openssl curl zlib libdeflate pkg-config xz mimalloc coreutils sed minizip-ng lzlib zlib:static zstd:static zstd:lib zstd zlib
+                             )) ;; to run cargo build in the shell
+    ))
+
+
+
+crusco-shell
