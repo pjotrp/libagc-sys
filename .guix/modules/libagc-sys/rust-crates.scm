@@ -5,7 +5,6 @@
   #:use-module (guix packages)
   #:use-module (guix git-download)
   #:use-module (guix build-system cargo)
-
   #:use-module (gnu packages)
 
   #:export (lookup-cargo-inputs))
@@ -13,6 +12,11 @@
 (define rust-cc-1.2.41
   (crate-source "cc" "1.2.41"
                 "1dvwli6fljqc7kgmihb249rmdfs5irla1h0n6vkavdi4pg6yd7xc"))
+
+(define rust-cargo-0.85.0
+  (crate-source "cargo" "0.85.0"
+                "05n42kxzxhkfj4s2jg2qcw759h2b3piai6p1fm90kx17jhlg9vxv"
+                #:snippet '(for-each delete-file-recursively '("benches" "tests"))))
 
 (define rust-find-msvc-tools-0.1.4
   (crate-source "find-msvc-tools" "0.1.4"
@@ -33,6 +37,7 @@
 (define-cargo-inputs lookup-cargo-inputs
                      (libagc-sys => (list
                                      rust-cc-1.2.41
+                                     rust-cargo-0.85.0
                                      rust-pkg-config-0.3.32
                                      rust-find-msvc-tools-0.1.4
                                      rust-shlex-1.3.0

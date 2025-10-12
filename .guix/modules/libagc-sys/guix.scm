@@ -7,6 +7,7 @@
   #:use-module (guix git-download)
   #:use-module (guix build-system cargo)
   #:use-module (guix build-system gnu)
+  #:use-module (guix import crate)
   #:use-module ((guix licenses) #:prefix license:)
 
   #:use-module (gnu packages base)
@@ -20,6 +21,7 @@
   #:use-module (gnu packages perl)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages rust)
+  #:use-module (gnu packages rust-crates)
   #:use-module (gnu packages tls)
 
   #:use-module (libagc-sys bioinformatics)
@@ -129,14 +131,7 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
                  #:select? vcs-file?))
     (build-system cargo-build-system)
     (inputs (cons*
-             ;; spoa
              bio-agclib
-             ;; pkg-config
-             ;; cmake
-             ;; gcc-toolchain
-             ;; binutils
-             ;; coreutils
-             ;; (list zstd "lib")
              (cargo-inputs 'libagc-sys #:module '(libagc-sys rust-crates))
              ))
     (synopsis "High levels of population-based compression for sequence data")
@@ -152,16 +147,22 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
     (inherit libagc-sys)
     (name "crusco-shell")
     (build-system cargo-build-system)
-    (inputs
-     (modify-inputs (package-inputs libagc-sys)
-         (append binutils coreutils-minimal ;; for the shell
-                 )))
     (propagated-inputs (list cmake rust nss-certs openssl perl gnu-make-4.2
+                             findutils
                              coreutils which perl binutils gcc-toolchain pkg-config zlib
                              sed curl clang
-             ;; gcc-toolchain make libdeflate pkg-config xz coreutils sed zstd zlib nss-certs openssl curl zlib libdeflate pkg-config xz mimalloc coreutils sed minizip-ng lzlib zlib:static zstd:static zstd:lib zstd zlib
+                             `(,rust "cargo")
                              )) ;; to run cargo build in the shell
-    ))
+    (arguments
+     `(#:install-source? #f
+       #:phases
+       (modify-phases %standard-phases
+                      (add-before 'build 'pre-build
+                                  (lambda _
+                                    (setenv "OUCH_ARTIFACTS_FOLDER" "target")
+                                    (invoke "cargo" "build")))
+
+    )))))
 
 
 
