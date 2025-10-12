@@ -131,9 +131,20 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
                  #:select? vcs-file?))
     (build-system cargo-build-system)
     (inputs (cons*
-             bio-agclib
              (cargo-inputs 'libagc-sys #:module '(libagc-sys rust-crates))
              ))
+    (propagated-inputs (list
+                        bio-agclib
+                        zstd))
+    (arguments
+     (list
+      #:phases
+      #~(modify-phases %standard-phases
+                       (replace 'build
+                                (lambda _
+                                  (invoke "cargo" "build" "-vv")
+                                )
+                       ))))
     (synopsis "High levels of population-based compression for sequence data")
     (description "
 Assembled Genomes Compressor (AGC) is a tool designed to compress collections of de-novo assembled genomes. It can be used for various types of datasets: short genomes (viruses) as well as long (humans).")
@@ -172,6 +183,4 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
                              )) ;; to run cargo build in the shell
     ))
 
-
-
-crusco-shell
+libagc-sys
