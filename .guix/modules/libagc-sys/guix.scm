@@ -1,3 +1,4 @@
+;; guix shell -C -N -F -L . -L .guix/modules crusco-shell
 
 (define-module (guix)
   #:use-module (guix gexp)
@@ -150,6 +151,7 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
   (package
     (inherit libagc-sys)
     (name "crusco-shell")
+    (build-system cargo-build-system)
     (inputs
      (modify-inputs (package-inputs libagc-sys)
          (append binutils coreutils-minimal ;; for the shell
