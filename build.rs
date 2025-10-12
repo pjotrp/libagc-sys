@@ -1,28 +1,16 @@
+// A minimal build file that picks up libagc when it exists
+//
 // Run with
 //
 //   cargo build -vv
 
 use std::env;
-// Zuse std::fs;
-// use std::path::PathBuf;
 
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
-    // let host = env::var("HOST").unwrap();
-    // let target = env::var("TARGET").unwrap();
-
-    // let host_and_target_contain = |s| host.contains(s) && target.contains(s);
-    // let mut cfg = cc::Build::new().cpp(true);
     let mut binding = cc::Build::new();
     let mut cfg = binding.cpp(true);
-
-    // If we've gotten this far we're probably a pretty standard platform.
-    // Almost all platforms here ship libz by default, but some don't have
-    // pkg-config files that we would find above.
-    //
-    // In any case test if libagc is actually installed and if so we link to it,
-    // otherwise continue below to build things.
     if libagc_installed(&mut cfg) {
         println!("cargo::warning=\"Linking against system libagc!\"");
         println!("cargo::rustc-link-lib=agc");
@@ -30,9 +18,6 @@ fn main() {
     }
 
     println!("cargo::error=\"Should not get here\"");
-
-    // For convenience fallback to building libagc if attempting to link libagc failed
-    // build_libagc(&mut cfg, &target)
 }
 
 fn libagc_installed(cfg: &mut cc::Build) -> bool {
