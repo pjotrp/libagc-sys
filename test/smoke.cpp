@@ -1,3 +1,5 @@
+// Smoke test that matches include file and lib for AGC
+
 #include <agc/agc-api.h>
 
 int main() {
