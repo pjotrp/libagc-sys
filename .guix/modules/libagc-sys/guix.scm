@@ -141,28 +141,36 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
     (license license:expat)
     (home-page "https://github.com/pangenome/libagc-sys ")))
 
+(define-public libagc-sys-dont-build
+  "Does not run cargo build before shell invocation"
+  (package
+    (inherit libagc-sys)
+    (name "crusco-shell")
+    (arguments
+     (list
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+                       (delete 'build)
+                       (delete 'install)
+                       )))))
+
 (define-public crusco-shell
   "Shell version to use 'cargo build' against guix rust"
   (package
-    (inherit libagc-sys)
+    (inherit libagc-sys-dont-build)
     (name "crusco-shell")
     (build-system cargo-build-system)
     (propagated-inputs (list cmake rust nss-certs openssl perl gnu-make-4.2
                              findutils
+                             bio-agclib
+                             mimalloc
                              coreutils which perl binutils gcc-toolchain pkg-config zlib
                              sed curl clang
+                             `(,zstd "lib")
                              `(,rust "cargo")
                              )) ;; to run cargo build in the shell
-    (arguments
-     `(#:install-source? #f
-       #:phases
-       (modify-phases %standard-phases
-                      (add-before 'build 'pre-build
-                                  (lambda _
-                                    (setenv "OUCH_ARTIFACTS_FOLDER" "target")
-                                    (invoke "cargo" "build")))
-
-    )))))
+    ))
 
 
 
