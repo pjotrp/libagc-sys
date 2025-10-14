@@ -51,11 +51,4 @@ codegen-units = 1
 
 [profile.dev]
 opt-level = 0
-# Allow C++ exceptions to propagate through Rust code
-# This prevents "Rust cannot catch foreign exceptions" error
-panic = "abort"
-
-[profile.test]
-opt-level = 2
-# IMPORTANT: Allow C++ exceptions from AGC library
 panic = "abort"
