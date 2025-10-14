@@ -344,7 +344,7 @@ unsafe impl Sync for AgcFile {}
 mod tests {
     use super::*;
 
-    const TEST_FILE: &str = "test_data.agc";
+    const TEST_FILE: &str = "test/data/input/toy_ex.agc";
 
     #[test]
     fn test_open_and_close() {
