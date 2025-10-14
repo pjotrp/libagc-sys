@@ -40,14 +40,6 @@ build-from-source = []
 # Feature for vendored AGC (include AGC source in the crate)
 vendored = []
 
-[[example]]
-name = "basic_usage"
-path = "examples/basic_usage.rs"
-
-[[example]]
-name = "analyze_genome"
-path = "examples/analyze_genome.rs"
-
 [package.metadata.docs.rs]
 # Documentation configuration for docs.rs
 rustdoc-args = ["--cfg", "docsrs"]

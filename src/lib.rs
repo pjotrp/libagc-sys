@@ -120,11 +120,8 @@ unsafe extern "C" {
     /// * `list` - array to deallocate
     fn agc_list_destroy(list: *mut *mut c_char) -> c_int;
 
-    /// Deallocate a string
-    ///
-    /// # Arguments
-    /// * `sample` - string to deallocate
-    fn agc_string_destroy(sample: *mut c_char) -> c_int;
+    // Did we create a memory leak here? The function is not defined in AGC (FIXME)
+    // fn agc_string_destroy(sample: *mut c_char) -> c_int;
 }
 
 /// Safe wrapper for AGC file operations
@@ -253,7 +250,7 @@ impl AgcFile {
 
             let c_str = CStr::from_ptr(ptr);
             let result = c_str.to_string_lossy().into_owned();
-            agc_string_destroy(ptr);
+            // agc_string_destroy(ptr);
             Ok(result)
         }
     }
@@ -331,7 +328,7 @@ unsafe impl Sync for AgcFile {}
 mod tests {
     use super::*;
 
-    const TEST_FILE: &str = "test_data.agc";
+    const TEST_FILE: &str = "test/data/input/toy_ex.agc";
 
     #[test]
     fn test_open_and_close() {
