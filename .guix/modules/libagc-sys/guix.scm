@@ -1,4 +1,6 @@
-;; guix shell -C -N -F -L . -L .guix/modules crusco-shell
+;; guix build -L . -L .guix/modules -f guix.scm
+;; guix shell -C -D -N -F -L . -L .guix/modules crusco-shell
+
 
 (define-module (guix)
   #:use-module (guix gexp)

@@ -2,10 +2,55 @@
 name = "libagc-sys"
 version = "0.1.0"
 edition = "2024"
+authors = ["Pjotr Prins <pjotr.public04@thebird.nl>"]
+license = "MIT"
+description = "Rust FFI bindings for the AGC (Assembled Genomes Compressor) library"
+repository = "https://github.com/pangenome/libagc-sys"
+documentation = "https://docs.rs/libagc-sys"
+readme = "README.md"
+keywords = ["genomics", "compression", "bioinformatics", "ffi"]
+categories = ["science", "api-bindings"]
 
 [dependencies]
+# No runtime dependencies needed for the bindings
 
 [build-dependencies]
 pkg-config = "0.3.9"
-cc = "1.0.98"
-# vcpkg = "0.2.11"
+cc = "1.0"
+walkdir = "2.4"
+num_cpus = "1.16"
+
+[dev-dependencies]
+# For testing
+tempfile = "3.8"
+
+[lib]
+name = "libagc"
+path = "src/lib.rs"
+
+# Optionally build a C dynamic library
+# crate-type = ["rlib", "cdylib"]
+
+[features]
+default = []
+
+# Feature to build AGC from source automatically
+build-from-source = []
+
+# Feature for vendored AGC (include AGC source in the crate)
+vendored = []
+
+[package.metadata.docs.rs]
+# Documentation configuration for docs.rs
+rustdoc-args = ["--cfg", "docsrs"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+
+[profile.dev]
+opt-level = 0
+
+[profile.test]
+opt-level = 2
