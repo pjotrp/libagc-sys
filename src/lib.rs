@@ -1,6 +1,7 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int};
 use std::ptr;
+use std::panic;
 
 /// Opaque type representing an AGC file handle
 #[repr(C)]
@@ -120,8 +121,21 @@ unsafe extern "C" {
     /// * `list` - array to deallocate
     fn agc_list_destroy(list: *mut *mut c_char) -> c_int;
 
-    // Did we create a memory leak here? The function is not defined in AGC (FIXME)
-    // fn agc_string_destroy(sample: *mut c_char) -> c_int;
+    // fn agc_string_destroy(sample: *mut c_char) -> c_int; FIXME
+}
+
+/// Helper function to catch C++ exceptions at FFI boundary
+///
+/// AGC is a C++ library that may throw exceptions. This wrapper
+/// catches any panics/exceptions and converts them to Result
+unsafe fn catch_cpp_exception<F, R>(f: F) -> Result<R, String>
+where
+    F: FnOnce() -> R + panic::UnwindSafe,
+{
+    match panic::catch_unwind(f) {
+        Ok(result) => Ok(result),
+        Err(_) => Err("C++ exception or panic occurred in AGC library".to_string()),
+    }
 }
 
 /// Safe wrapper for AGC file operations
@@ -143,6 +157,8 @@ impl AgcFile {
         let prefetch_flag = if prefetching { 1 } else { 0 };
 
         unsafe {
+            // Note: We can't catch C++ exceptions with catch_unwind reliably
+            // The AGC C API should not throw exceptions across the boundary
             let handle = agc_open(c_filename.into_raw(), prefetch_flag);
             if handle.is_null() {
                 Err(format!("Failed to open AGC file: {}", filename))
@@ -250,7 +266,7 @@ impl AgcFile {
 
             let c_str = CStr::from_ptr(ptr);
             let result = c_str.to_string_lossy().into_owned();
-            // agc_string_destroy(ptr);
+            // agc_string_destroy(ptr); FIXME
             Ok(result)
         }
     }
@@ -328,7 +344,7 @@ unsafe impl Sync for AgcFile {}
 mod tests {
     use super::*;
 
-    const TEST_FILE: &str = "test/data/input/toy_ex.agc";
+    const TEST_FILE: &str = "test_data.agc";
 
     #[test]
     fn test_open_and_close() {

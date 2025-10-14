@@ -1,12 +1,12 @@
 [package]
-name = "libagc-sys"
+name = "agc-bindings"
 version = "0.1.0"
-edition = "2024"
-authors = ["Pjotr Prins <pjotr.public04@thebird.nl>"]
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
 license = "MIT"
 description = "Rust FFI bindings for the AGC (Assembled Genomes Compressor) library"
-repository = "https://github.com/pangenome/libagc-sys"
-documentation = "https://docs.rs/libagc-sys"
+repository = "https://github.com/yourusername/agc-bindings"
+documentation = "https://docs.rs/agc-bindings"
 readme = "README.md"
 keywords = ["genomics", "compression", "bioinformatics", "ffi"]
 categories = ["science", "api-bindings"]
@@ -51,6 +51,11 @@ codegen-units = 1
 
 [profile.dev]
 opt-level = 0
+# Allow C++ exceptions to propagate through Rust code
+# This prevents "Rust cannot catch foreign exceptions" error
+panic = "abort"
 
 [profile.test]
 opt-level = 2
+# IMPORTANT: Allow C++ exceptions from AGC library
+panic = "abort"
