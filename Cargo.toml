@@ -10,12 +10,12 @@ documentation = "https://docs.rs/libagc-sys"
 readme = "README.md"
 keywords = ["genomics", "compression", "bioinformatics", "ffi"]
 categories = ["science", "api-bindings"]
+links = "agc"
 
 [dependencies]
 # No runtime dependencies needed for the bindings
 
 [build-dependencies]
-pkg-config = "0.3.9"
 cc = "1.0"
 walkdir = "2.4"
 num_cpus = "1.16"
@@ -25,11 +25,11 @@ num_cpus = "1.16"
 tempfile = "3.8"
 
 [lib]
-name = "libagc"
+name = "agc_bindings"
 path = "src/lib.rs"
 
 # Optionally build a C dynamic library
-# crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib", "cdylib"]
 
 [features]
 default = []
@@ -39,6 +39,14 @@ build-from-source = []
 
 # Feature for vendored AGC (include AGC source in the crate)
 vendored = []
+
+[[example]]
+name = "basic_usage"
+path = "examples/basic_usage.rs"
+
+[[example]]
+name = "analyze_genome"
+path = "examples/analyze_genome.rs"
 
 [package.metadata.docs.rs]
 # Documentation configuration for docs.rs
