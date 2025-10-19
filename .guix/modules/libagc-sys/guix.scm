@@ -31,20 +31,20 @@
 
 
 (define-public bio-agclib
-  (let ((commit "f0fef1c"))
+  (let ((commit "a09c4df6bda595c139433366902ac3160c4c3bfb"))
   (package
     (name "bio-agclib")
     (version (string-append "3.2.1-" (string-take commit 7)))
     (source (origin
              (method git-fetch)
              (uri (git-reference
-                   (url "https://github.com/refresh-bio/agc")
+                   (url "https://github.com/pjotrp/agc")
                    (commit commit)
                    (recursive? #t)))
              (file-name (string-append name "-" version "-checkout"))
              (sha256
               (base32
-               "1svmmck2l8fw8rqhrj61nglmw13a3dmmyx69xqajc7mglaqdw5aa"
+               "17rxszfwd12628qnaf431y1npwcfj46yy0k795ckwildrb0yzy2k"
                ))))
     (inputs (list
       libdeflate
@@ -158,7 +158,7 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
   "Does not run cargo build before shell invocation"
   (package
     (inherit libagc-sys)
-    (name "crusco-shell")
+    (name "libagc-sys-dont-build")
     (arguments
      (list
       #:tests? #f
@@ -183,6 +183,14 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
                              `(,zstd "lib")
                              `(,rust "cargo")
                              )) ;; to run cargo build in the shell
+    (arguments
+     (list
+      #:tests? #f
+      #:phases
+      #~(modify-phases %standard-phases
+                       (delete 'build)
+                       (delete 'package)
+                       (delete 'install))))
     ))
 
 libagc-sys

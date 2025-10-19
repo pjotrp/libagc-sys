@@ -2,6 +2,24 @@
 
 Rust FFI bindings for the AGC (Assembled Genomes Compressor) C library.
 
+// Best practices for C API exception handling:
+//
+// 1. ALWAYS wrap C++ code in try-catch blocks when called from C API
+// 2. NEVER let exceptions escape across C API boundary
+// 3. Convert exceptions to error codes
+// 4. Provide a way to retrieve error messages (like agc_get_last_error)
+// 5. Use noexcept for C API functions (C++11+)
+// 6. Document error codes in the header file
+// 7. Use different error codes for different error types
+//
+// Error code convention:
+// -1: General error
+// -2: Invalid argument
+// -3: Not found
+// -4: Runtime error
+// -5: Memory error
+// etc.
+
 ## Overview
 
 AGC is a library for compressed storage and efficient random access to assembled genomes. These Rust bindings provide a safe, idiomatic interface to the AGC C API.

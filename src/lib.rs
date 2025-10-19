@@ -1,7 +1,6 @@
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int};
 use std::ptr;
-use std::panic;
 
 /// Opaque type representing an AGC file handle
 #[repr(C)]
@@ -122,20 +121,6 @@ unsafe extern "C" {
     fn agc_list_destroy(list: *mut *mut c_char) -> c_int;
 
     // fn agc_string_destroy(sample: *mut c_char) -> c_int; FIXME
-}
-
-/// Helper function to catch C++ exceptions at FFI boundary
-///
-/// AGC is a C++ library that may throw exceptions. This wrapper
-/// catches any panics/exceptions and converts them to Result
-unsafe fn catch_cpp_exception<F, R>(f: F) -> Result<R, String>
-where
-    F: FnOnce() -> R + panic::UnwindSafe,
-{
-    match panic::catch_unwind(f) {
-        Ok(result) => Ok(result),
-        Err(_) => Err("C++ exception or panic occurred in AGC library".to_string()),
-    }
 }
 
 /// Safe wrapper for AGC file operations
@@ -344,7 +329,7 @@ unsafe impl Sync for AgcFile {}
 mod tests {
     use super::*;
 
-    const TEST_FILE: &str = "test/data/input/toy_ex.agc";
+    const TEST_FILE: &str = "test/data/input/test.agc";
 
     #[test]
     fn test_open_and_close() {
