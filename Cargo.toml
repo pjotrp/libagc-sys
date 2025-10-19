@@ -1,12 +1,12 @@
 [package]
-name = "agc-bindings"
+name = "libagc-sys"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Pjotr Prins <pjotr.public01@thebird.nl>"]
 license = "MIT"
-description = "Rust FFI bindings for the AGC (Assembled Genomes Compressor) library"
-repository = "https://github.com/yourusername/agc-bindings"
-documentation = "https://docs.rs/agc-bindings"
+description = "Rust FFI bindings for the AGC (Assembled Genomes Compressor) library using the C ABI"
+repository = "https://github.com/yourusername/libagc-sys"
+documentation = "https://docs.rs/libagc-sys"
 readme = "README.md"
 keywords = ["genomics", "compression", "bioinformatics", "ffi"]
 categories = ["science", "api-bindings"]
@@ -25,7 +25,7 @@ num_cpus = "1.16"
 tempfile = "3.8"
 
 [lib]
-name = "agc_bindings"
+name = "libagc-sys"
 path = "src/lib.rs"
 
 # Optionally build a C dynamic library
