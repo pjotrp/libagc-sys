@@ -4,13 +4,21 @@ version = "0.1.0"
 edition = "2021"
 authors = ["Pjotr Prins <pjotr.public01@thebird.nl>"]
 license = "MIT"
-description = "Rust FFI bindings for the AGC (Assembled Genomes Compressor) library using the C ABI"
-repository = "https://github.com/yourusername/libagc-sys"
+description = "Low level bindings for the AGC (Assembled Genomes Compressor) library using the C ABI"
+repository = "https://github.com/pjotrp/libagc-sys"
 documentation = "https://docs.rs/libagc-sys"
 readme = "README.md"
 keywords = ["genomics", "compression", "bioinformatics", "ffi"]
-categories = ["science", "api-bindings"]
+categories = ["compression", "external-ffi-bindings", "science", "api-bindings"]
 links = "agc"
+# edition = "2021"
+
+include = [
+    "LICENSE*",
+    "/README.md",
+    "build.rs",
+    "src/*.rs",
+]
 
 [dependencies]
 # No runtime dependencies needed for the bindings
