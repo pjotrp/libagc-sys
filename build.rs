@@ -125,10 +125,11 @@ fn link_cpp_stdlib() {
     } else if target.contains("linux") {
         // Linux - link libstdc++ (most common)
         // Using static linking for C++ stdlib to avoid runtime issues
-        println!("cargo:rustc-link-lib=stdc++");
+        // println!("cargo:rustc-link-lib=stdc++");
+        println!("cargo:rustc-link-lib=static=stdc++");
         
         // Also link gcc_s for exception handling
-        println!("cargo:rustc-link-lib=gcc_s");
+        // println!("cargo:rustc-link-lib=gcc_s");
     } else if target.contains("windows") {
         // Windows with MSVC
         if target.contains("msvc") {
