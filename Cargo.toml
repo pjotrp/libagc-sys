@@ -32,12 +32,12 @@ num_cpus = "1.16"
 # For testing
 tempfile = "3.8"
 
-# [lib]
+[lib]
 # name = "libagc_sys"
 # path = "src/lib.rs"
 
 # Optionally build a C dynamic library
-# crate-type = ["rlib", "cdylib"]
+crate-type = ["rlib", "cdylib"]
 
 [features]
 default = []
