@@ -1,12 +1,12 @@
 [package]
-name = "libagc-sys"
+name = "libagc_sys"
 version = "0.1.0"
 edition = "2021"
 authors = ["Pjotr Prins <pjotr.public01@thebird.nl>"]
 license = "MIT"
 description = "Low level bindings for the AGC (Assembled Genomes Compressor) library using the C ABI"
 repository = "https://github.com/pjotrp/libagc-sys"
-documentation = "https://docs.rs/libagc-sys"
+# documentation = "https://docs.rs/libagc-sys"
 readme = "README.md"
 keywords = ["genomics", "compression", "bioinformatics", "ffi"]
 categories = ["compression", "external-ffi-bindings", "science", "api-bindings"]
@@ -32,8 +32,8 @@ num_cpus = "1.16"
 # For testing
 tempfile = "3.8"
 
-[lib]
-name = "libagc_sys"
+# [lib]
+# name = "libagc_sys"
 # path = "src/lib.rs"
 
 # Optionally build a C dynamic library
