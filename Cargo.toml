@@ -34,7 +34,7 @@ tempfile = "3.8"
 
 [lib]
 name = "libagc_sys"
-path = "src/lib.rs"
+# path = "src/lib.rs"
 
 # Optionally build a C dynamic library
 crate-type = ["rlib", "cdylib"]
