@@ -37,7 +37,7 @@ tempfile = "3.8"
 # path = "src/lib.rs"
 
 # Optionally build a C dynamic library
-crate-type = ["rlib", "cdylib"]
+# crate-type = ["rlib", "cdylib"]
 
 [features]
 default = []
