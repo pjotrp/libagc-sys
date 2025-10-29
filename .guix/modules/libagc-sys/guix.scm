@@ -1,4 +1,5 @@
 ;; guix build -L . -L .guix/modules -f guix.scm
+;; guix build -L . -L .guix/modules bio-agclib
 ;; guix shell -C -D -N -F -L . -L .guix/modules crusco-shell
 
 
@@ -81,6 +82,7 @@
                                        (("^[$].call PROPOSE_ZLIB_NG") "# ")
                                        (("^[$].call CHOOSE_GZIP_DECOMPRESSION") "# ")
                                        (("^[$].call ADD_PYBIND11") "# ")
+                                       (("^[$].call SET_STATIC") "# ")
                                        )))
             (delete 'configure)
             (replace 'build
@@ -103,7 +105,9 @@
                         (inc (string-append #$output "/include/agc"))
                         )
                 (install-file "src/lib-cxx/agc-api.h" inc)
-                (install-file "bin/libagc.a" lib))))
+                (install-file "bin/libagc.so" lib)
+                (install-file "bin/libagc.a" lib)
+                )))
             )))
 
     (properties '((tunable? . #t)))

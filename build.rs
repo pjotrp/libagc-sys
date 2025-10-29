@@ -151,9 +151,9 @@ fn link_cpp_stdlib() {
         println!("cargo:rustc-link-lib=c++");
     } else if target.contains("linux") {
         // Linux - link libstdc++ (most common)
-        // Using static linking for C++ stdlib to avoid runtime issues
-        // println!("cargo:rustc-link-lib=stdc++");
-        println!("cargo:rustc-link-lib=static=stdc++");
+        // Using static linking for C++ stdlib to avoid runtime issues?
+        // println!("cargo:rustc-link-lib=static=stdc++");
+        println!("cargo:rustc-link-lib=stdc++");
 
         // Also link gcc_s for exception handling
         // println!("cargo:rustc-link-lib=gcc_s");
