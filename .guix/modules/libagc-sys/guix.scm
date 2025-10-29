@@ -145,6 +145,7 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
              ))
     (propagated-inputs (list
                         bio-agclib
+                        pkg-config
                         zstd))
     (arguments
      (list
