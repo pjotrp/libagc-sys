@@ -27,6 +27,7 @@ include = [
 cc = "1.0"
 walkdir = "2.4"
 num_cpus = "1.16"
+pkg-config = "0.3"
 
 [dev-dependencies]
 # For testing

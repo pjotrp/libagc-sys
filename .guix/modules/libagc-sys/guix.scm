@@ -1,6 +1,7 @@
 ;; guix build -L . -L .guix/modules -f guix.scm
 ;; guix build -L . -L .guix/modules bio-agclib
 ;; guix shell -C -D -N -F -L . -L .guix/modules crusco-shell
+;;    cargo build
 
 
 (define-module (guix)
@@ -32,7 +33,7 @@
 
 
 (define-public bio-agclib
-  (let ((commit "a09c4df6bda595c139433366902ac3160c4c3bfb"))
+  (let ((commit "0eca9c6851c6490180a6a9683b752e16bc37d6df"))
   (package
     (name "bio-agclib")
     (version (string-append "3.2.1-" (string-take commit 7)))
@@ -45,7 +46,7 @@
              (file-name (string-append name "-" version "-checkout"))
              (sha256
               (base32
-               "17rxszfwd12628qnaf431y1npwcfj46yy0k795ckwildrb0yzy2k"
+               "0523pdgrbhgnaykd6nxvzncs4z91kpv5aq842zdb3pbkf8qciqv2"
                ))))
     (inputs (list
       libdeflate
@@ -53,10 +54,13 @@
       ;; coreutils
       ;; sed
       ;; minizip-ng
+      `(,zstd "lib")
+      libdeflate
       lzlib
       ;; zstd
       zlib
       ))
+
     (build-system gnu-build-system)
     (arguments
      (list
@@ -96,7 +100,7 @@
                                (target #$(if (target-mingw?)
                                              "static"
                                              "shared")))
-                          (apply invoke "make" "VERBOSE=1" "libagc" jobs make-flags)
+                          (apply invoke "make" "VERBOSE=1" "libagc_so" jobs make-flags)
                           )))
             (replace 'install
                ;; Upstream provides no install phase.
@@ -106,7 +110,7 @@
                         )
                 (install-file "src/lib-cxx/agc-api.h" inc)
                 (install-file "bin/libagc.so" lib)
-                (install-file "bin/libagc.a" lib)
+                ;; (install-file "bin/libagc.a" lib)
                 )))
             )))
 
@@ -141,6 +145,7 @@ Assembled Genomes Compressor (AGC) is a tool designed to compress collections of
              ))
     (propagated-inputs (list
                         bio-agclib
+                        pkg-config
                         zstd))
     (arguments
      (list

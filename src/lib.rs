@@ -120,7 +120,11 @@ unsafe extern "C" {
     /// * `list` - array to deallocate
     fn agc_list_destroy(list: *mut *mut c_char) -> c_int;
 
-    // fn agc_string_destroy(sample: *mut c_char) -> c_int; FIXME
+    /// Deallocate a string returned by AGC functions
+    ///
+    /// # Arguments
+    /// * `sample` - string to deallocate
+    fn agc_string_destroy(sample: *mut c_char) -> c_int;
 }
 
 /// Safe wrapper for AGC file operations
@@ -251,7 +255,7 @@ impl AgcFile {
 
             let c_str = CStr::from_ptr(ptr);
             let result = c_str.to_string_lossy().into_owned();
-            // agc_string_destroy(ptr); FIXME
+            agc_string_destroy(ptr);
             Ok(result)
         }
     }
