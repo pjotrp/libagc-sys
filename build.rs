@@ -22,7 +22,13 @@ fn main() {
     // Determine the AGC library location
     // Try multiple approaches to find/build the AGC library
 
-    // Approach 1: Check if AGC_LIB_DIR is set (user-provided library)
+    // Approach 1: Try pkg-config first
+    if let Ok(_library) = pkg_config::probe_library("libagc") {
+        println!("cargo:warning=Found AGC via pkg-config");
+        return;
+    }
+
+    // Approach 2: Check if AGC_LIB_DIR is set (user-provided library)
     if let Ok(lib_dir) = env::var("AGC_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", lib_dir);
         println!("cargo:rustc-link-lib=agc");
@@ -30,20 +36,20 @@ fn main() {
         return;
     }
 
-    // Approach 2: Check if AGC library is in system library paths
+    // Approach 3: Check if AGC library is in system library paths
     if library_exists_in_system() {
         println!("cargo:rustc-link-lib=agc");
         println!("cargo:warning=Using system AGC library");
         return;
     }
 
-    // Approach 3: Build AGC from source if available
+    // Approach 4: Build AGC from source if available
     if let Ok(agc_source) = env::var("AGC_SOURCE_DIR") {
         build_agc_from_source(&agc_source, &out_dir);
         return;
     }
 
-    // Approach 4: Try to find AGC in common locations
+    // Approach 5: Try to find AGC in common locations
     let common_paths = vec![
         "/usr/lib",
         "/usr/local/lib",
