@@ -11,7 +11,7 @@ fn main() {
     // AGC is written in C++, so we need to link the C++ standard library
     // This applies to both the main library and test binaries
     link_cpp_stdlib();
-    find_and_link_static_libstdcpp();
+    find_and_link_libstdcpp();
 
     // Link AGC's dependencies (zstd, etc.)
     link_agc_dependencies();
@@ -82,30 +82,10 @@ fn main() {
     );
 }
 
-fn find_and_link_static_libstdcpp() {
-    // Method 1: Use g++ to find libstdc++.a
-    if let Ok(output) = Command::new("g++")
-        .arg("-print-file-name=libstdc++.a")
-        .output()
-    {
-        if output.status.success() {
-            if let Ok(path_str) = String::from_utf8(output.stdout) {
-                let path_str = path_str.trim();
-
-                if !path_str.is_empty() && path_str != "libstdc++.a" {
-                    // Found the actual path
-                    if let Some(parent) = PathBuf::from(path_str).parent() {
-                        println!("cargo:rustc-link-search=native={}", parent.display());
-                        println!("cargo:rustc-link-lib=static=stdc++");
-                        println!("cargo:warning=Using static libstdc++ from: {}", path_str);
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
-    println!("cargo:rustc-link-search=native={}", "/gnu/store/x82y1af67l0kk6z95rk0m7pf216drh29-profile/lib");
+fn find_and_link_libstdcpp() {
+    // Use dynamic linking for libstdc++
+    println!("cargo:rustc-link-lib=stdc++");
+    println!("cargo:warning=Using dynamic libstdc++");
 }
 
 /// Link AGC's dependencies (compression libraries, etc.)
@@ -157,12 +137,10 @@ fn link_cpp_stdlib() {
         println!("cargo:rustc-link-lib=c++");
     } else if target.contains("linux") {
         // Linux - link libstdc++ (most common)
-        // Using static linking for C++ stdlib to avoid runtime issues?
-        // println!("cargo:rustc-link-lib=static=stdc++");
         println!("cargo:rustc-link-lib=stdc++");
 
         // Also link gcc_s for exception handling
-        // println!("cargo:rustc-link-lib=gcc_s");
+        println!("cargo:rustc-link-lib=gcc_s");
     } else if target.contains("windows") {
         // Windows with MSVC
         if target.contains("msvc") {
