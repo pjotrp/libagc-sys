@@ -13,9 +13,6 @@ fn main() {
     link_cpp_stdlib();
     find_and_link_libstdcpp();
 
-    // Link AGC's dependencies (zstd, etc.)
-    link_agc_dependencies();
-
     // Also ensure test binaries get the same link flags
     ensure_test_linking();
 
@@ -25,6 +22,8 @@ fn main() {
     // Approach 1: Try pkg-config first
     if let Ok(_library) = pkg_config::probe_library("libagc") {
         println!("cargo:warning=Found AGC via pkg-config");
+        // Still need to link dependencies even when using pkg-config
+        link_agc_dependencies();
         return;
     }
 
@@ -33,6 +32,8 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", lib_dir);
         println!("cargo:rustc-link-lib=agc");
         println!("cargo:rerun-if-env-changed=AGC_LIB_DIR");
+        // Link dependencies after setting up AGC
+        link_agc_dependencies();
         return;
     }
 
@@ -40,6 +41,8 @@ fn main() {
     if library_exists_in_system() {
         println!("cargo:rustc-link-lib=agc");
         println!("cargo:warning=Using system AGC library");
+        // Link dependencies after setting up AGC
+        link_agc_dependencies();
         return;
     }
 
@@ -64,6 +67,8 @@ fn main() {
             println!("cargo:rustc-link-search=native={}", path);
             println!("cargo:rustc-link-lib=agc");
             println!("cargo:warning=Found AGC library in {}", path);
+            // Link dependencies after setting up AGC
+            link_agc_dependencies();
             return;
         }
     }
@@ -92,40 +97,38 @@ fn find_and_link_libstdcpp() {
 fn link_agc_dependencies() {
     let target = env::var("TARGET").unwrap();
 
-    // AGC uses zstd for compression
-    println!("cargo:rustc-link-lib=zstd");
+    // AGC uses zstd for compression - always link it
+    // Try pkg-config first for proper flags
+    let mut zstd_linked = false;
+    
+    if let Ok(library) = pkg_config::probe_library("libzstd") {
+        println!("cargo:warning=Found zstd via pkg-config");
+        zstd_linked = true;
+    } else {
+        // Fallback to direct linking
+        println!("cargo:rustc-link-lib=zstd");
+        println!("cargo:warning=Linking zstd directly (ensure libzstd is installed)");
+        zstd_linked = true;
+    }
 
     // AGC may also use other compression libraries
-    // Try linking them, but don't fail if they're not available
-    // as they might be statically linked into libagc
-
-    // Check if we can find zstd with pkg-config
-    if Command::new("pkg-config")
-        .args(&["--exists", "libzstd"])
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
-    {
-        if let Ok(output) = Command::new("pkg-config")
-            .args(&["--libs", "libzstd"])
-            .output()
-        {
-            if output.status.success() {
-                let libs = String::from_utf8_lossy(&output.stdout);
-                println!("cargo:warning=Found zstd via pkg-config: {}", libs.trim());
-            }
-        }
-    } else {
-        println!("cargo:warning=zstd library will be linked (ensure libzstd is installed)");
-    }
-
-    // On some systems, AGC might need additional libraries
+    // Link them if available
     if target.contains("linux") {
-        // pthread is often needed
+        // pthread is often needed for AGC
         println!("cargo:rustc-link-lib=pthread");
+        
+        // Some AGC builds may need additional compression libraries
+        println!("cargo:rustc-link-lib=z");  // zlib
+    } else if target.contains("apple") || target.contains("darwin") {
+        // macOS may need zlib
+        println!("cargo:rustc-link-lib=z");
     }
 
-    println!("cargo:warning=Linking AGC dependencies: zstd");
+    if zstd_linked {
+        println!("cargo:warning=Linked AGC dependencies: zstd, z, pthread (platform dependent)");
+    } else {
+        panic!("Failed to link zstd library - AGC requires zstd for compression");
+    }
 }
 
 /// Link the C++ standard library based on platform and compiler
